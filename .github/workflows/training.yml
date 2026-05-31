@@ -28,6 +28,13 @@ jobs:
           cd MLProject
           mlflow run . --env-manager local
 
+      - name: Get Latest MLflow Run ID
+        id: get_run_id
+        run: |
+          RUN_ID=$(cat MLProject/latest_run.txt)
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "Model berhasil dilatih dengan Run ID: $RUN_ID"
+
       - name: Upload Model Artifact to GitHub
         uses: actions/upload-artifact@v4
         with:
