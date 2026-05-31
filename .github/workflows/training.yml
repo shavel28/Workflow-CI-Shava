@@ -28,17 +28,6 @@ jobs:
           cd MLProject
           mlflow run . --env-manager local
 
-      - name: Create Custom Dockerfile for Serving
-        run: |
-          cat << 'EOF' > MLProject/Dockerfile
-          FROM python:3.10-slim
-          WORKDIR /app
-          COPY requirements.txt .
-          RUN pip install --no-cache-dir -r requirements.txt
-          COPY . .
-          CMD ["python", "modelling.py"]
-          EOF
-
       - name: Upload Model Artifact to GitHub
         uses: actions/upload-artifact@v4
         with:
@@ -51,10 +40,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build Docker Image (Native Mode)
+      - name: Build Docker Image via MLflow Build-Docker
         run: |
           cd MLProject
-          docker build -t shavel28/customer-personality-model:latest .
+          mlflow models build-docker \
+            -m mlruns/0/${{ env.RUN_ID }}/artifacts/model \
+            -n shavel28/customer-personality-model:latest \
+            --env-manager local
 
       - name: Push Docker Image to Cloud
         run: |
